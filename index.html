@@ -81,6 +81,14 @@ input[type=search]:focus{outline:2px solid var(--accent-soft);border-color:var(-
 .dcount{font-size:12px;color:var(--ink-3);white-space:nowrap}
 .dbody{display:none;border-top:1px solid var(--line);padding:6px 16px 14px;background:#fcfcfd}
 .day.open .dbody{display:block}
+.matbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0 4px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.matlink{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border:1px solid #f6c7bd;border-radius:999px;padding:5px 12px;font-size:12.5px;text-decoration:none;font-weight:600}
+.matlink:hover{background:#fbe0d9}
+.matpwd{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3)}
+.matnote{font-size:12.5px;color:var(--ink-2)}
+.matpwd code{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:12px;color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace}
+.matcopy{background:none;border:1px solid var(--line);border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--ink-2);font-family:inherit}
+.matcopy:hover{border-color:var(--accent);color:var(--accent)}
 .slot{display:flex;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px}
 .slot:last-child{border-bottom:0}
 .slot .sn{color:var(--ink-3);font-size:12px;width:22px;flex:none}
@@ -125,7 +133,7 @@ const L={
    problem:'痛点 Problem',approach:'方案 Approach',impact:'预期影响 Impact',
    none:'没有匹配的队伍',
    dteams:'支队伍',
-   go:'查看'},
+   go:'查看',deck:'Demo Deck',rec:'录屏回放',pwd:'密码',copy:'复制',matnote:'📩 录屏信息详见邮件通知'},
  en:{sub:'Search · Recommendation · Ads ｜ BJ · SH · SZ · SG',
    teams:'Teams',people:'Participants',tracks:'Tracks',sites:'Sites',
    tabT:'Tracks',tabM:'Teams',tabD:'Demo Week',
@@ -134,7 +142,7 @@ const L={
    problem:'Problem',approach:'Approach',impact:'Impact',
    none:'No matching teams',
    dteams:'teams',
-   go:'View'}
+   go:'View',deck:'Demo Deck',rec:'Recording',pwd:'Passcode',copy:'Copy',matnote:'📩 Recording details: see email notification'}
 };
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const T=id=>DATA.teams.find(t=>t.id===id);
@@ -212,6 +220,9 @@ function viewTeams(){
     + (list.length?list.map(t=>teamCard(t,false)).join(''):`<div class="empty">${d.none}</div>`);
 }
 
+function matbar(){const d=L[LANG];
+  return `<div class="matbar"><span class="matnote">${d.matnote}</span></div>`;
+}
 function viewDemo(){
   const d=L[LANG];
   return DATA.schedule.map((day,di)=>`<div class="day${di===0?' open':''}" data-day="${di}">
@@ -221,7 +232,7 @@ function viewDemo(){
       <div class="dcount">${day.ids.length} ${d.dteams}</div>
       <div class="caret">▶</div>
     </div>
-    <div class="dbody">${day.ids.map((id,i)=>{const t=T(id);return `<div class="slot">
+    <div class="dbody">${matbar()}${day.ids.map((id,i)=>{const t=T(id);return `<div class="slot">
         <span class="sn">${i+1}</span>
         <span class="snm"><span class="tdot" style="display:inline-block;background:${tk(t.track).color}"></span> ${esc(t.name)}</span>
         <span class="sc">${(s=>esc(s.length>90?s.slice(0,90)+'…':s))(ttl(t))}</span>
@@ -244,6 +255,9 @@ document.addEventListener('click',e=>{
   const fl=e.target.closest('[data-fl]');       if(fl){FL=fl.dataset.fl;render();return;}
   const tg=e.target.closest('[data-toggle]');   if(tg){tg.parentElement.classList.toggle('open');return;}
   const dt=e.target.closest('[data-dtoggle]');  if(dt){dt.parentElement.classList.toggle('open');return;}
+  const cp=e.target.closest('[data-copy]');
+  if(cp){navigator.clipboard&&navigator.clipboard.writeText(cp.dataset.copy);
+    const o=cp.textContent;cp.textContent='✓';setTimeout(()=>{cp.textContent=o},1200);return;}
   if(e.target.id==='lang'){LANG=LANG==='cn'?'en':'cn';render();}
 });
 document.addEventListener('input',e=>{
